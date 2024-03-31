@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template
+from flask import jsonify, make_response
 import mysql.connector
 
 app = Flask(__name__)
@@ -26,24 +27,17 @@ def fetch_data():
         print(data)
         book_data = []
         for document in data: 
-            print (document)
             document['_id'] = str(document['_id'])
             book_data.append(document)
+            print(book_data)
+            return make_response(jsonify(book_data), 200)
     except mysql.connector.Error as err:
         return jsonify({'error': f'Query execution error: {err}'}), 500
-
     finally:
         if connection.is_connected():
             connection.close()
-            
-
-
     # Convert data to JSON
     # json_data = jsonify(data)
-
-    # return json_data
-    print(book_data)
-    return book_data
 
 @app.route('/data')
 def display_data():
@@ -57,32 +51,32 @@ def display_data():
 def home():
     return render_template("index.html")
 
-@app.route("/books", methods=["GET"])
-def search_books():
-    getbook = request.get_json()
-    print(getbook)
-    if not getbook:
-        return jsonify ({'error': 'No data provided'}), 400
-    book_id = getbook.get('Book_id')
-    print(book_id)
-    title = getbook.get('title')
-    print(title)
-    author = getbook.get('Author') # Validate data
-    print(author)
-    sql = "INSERT INTO books (book_id, Title, Author) VALUES (%s, %s, %s)"
-    val = (book_id, title, author)   
-    cursor.execute(sql, val)
-    if not title or not author:
-        return jsonify({'error': 'Missing required fields'}), 400
-# Process data (store in database, etc. ) #
-    return jsonify({'message': 'Book added success fully '}), 201
+# @app.route("/books", methods=["GET"])
+# def search_books():
+#     getbook = request.get_json()
+#     print(getbook)
+#     if not getbook:
+#         return jsonify ({'error': 'No data provided'}), 400
+#     book_id = getbook.get('Book_id')
+#     print(book_id)
+#     title = getbook.get('title')
+#     print(title)
+#     author = getbook.get('Author') # Validate data
+#     print(author)
+#     sql = "INSERT INTO books (book_id, Title, Author) VALUES (%s, %s, %s)"
+#     val = (book_id, title, author)   
+#     cursor.execute(sql, val)
+#     if not title or not author:
+#         return jsonify({'error': 'Missing required fields'}), 400
+# # Process data (store in database, etc. ) #
+#     return jsonify({'message': 'Book added success fully '}), 201
 
-# Commit the changes
-connection.commit()
+# # Commit the changes
+# connection.commit()
 
-# Close the connection
-connection.close()
+# # Close the connection
+# connection.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
